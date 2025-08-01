@@ -18,7 +18,8 @@ const PartyPage = () => {
   const [notFound, setNotFound] = useState(false);
   const [videoURL, setVideoURL] = useState("");
   const [video, setVideo] = useState(null);
-  const [playback, setPlayback] = useState(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const hideTimeout = useRef(null);
 
   const videoRef = useRef(null);
 
@@ -119,8 +120,6 @@ const PartyPage = () => {
         const video = videoRef.current;
         if (!data || !video) return;
 
-        console.log("SYNCING PLAYBACK", data);
-
         const timeDiff = Math.abs(video.currentTime - data.currentTime);
         if (timeDiff > 1) {
           video.currentTime = data.currentTime;
@@ -192,7 +191,7 @@ const PartyPage = () => {
   return (
     <div className="h-screen w-screen bg-black text-white overflow-hidden relative">
       {/* Top-left Party Info */}
-      <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-sm p-2 rounded shadow text-sm">
+      <div className="absolute top-4 left-4 z-30 bg-black/60 backdrop-blur-sm p-2 rounded shadow text-sm">
         <p>
           <span className="font-semibold">Party ID:</span> {party.partyId}
         </p>
@@ -201,8 +200,29 @@ const PartyPage = () => {
         </p>
       </div>
 
+      {/* Leave Party Button */}
+      <button
+        onClick={() => router.push("/")}
+        className=" top-4 left-4 mt-20 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm z-30"
+      >
+        Leave Party
+      </button>
+
       {/* Sidebar Members */}
-      <div className="absolute top-0 right-0 h-full w-64 bg-black/80 backdrop-blur-lg p-4 transition-transform duration-500 ease-in-out z-10 hover:translate-x-0 translate-x-full md:translate-x-0">
+      <div
+        onMouseEnter={() => {
+          clearTimeout(hideTimeout.current);
+          setSidebarVisible(true);
+        }}
+        onMouseLeave={() => {
+          hideTimeout.current = setTimeout(() => {
+            setSidebarVisible(false);
+          }, 200);
+        }}
+        className={`absolute top-0 right-0 h-full w-64 bg-black/80 backdrop-blur-lg p-4 transition-transform duration-500 ease-in-out z-10 ${
+          sidebarVisible ? "translate-x-0" : "translate-x-63"
+        }`}
+      >
         <h2 className="text-xl font-bold mb-4 border-b pb-2">👥 Members</h2>
         {members.length > 0 ? (
           <ul className="space-y-2 text-sm">
@@ -243,8 +263,9 @@ const PartyPage = () => {
             <video
               ref={videoRef}
               src={video.url}
-              controls
+              controls={isHost}
               muted
+              onContextMenu={(e) => !isHost && e.preventDefault()}
               className="w-full h-full object-contain bg-black"
               onPlay={isHost ? handlePlay : undefined}
               onPause={isHost ? handlePause : undefined}
