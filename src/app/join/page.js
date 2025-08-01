@@ -6,12 +6,14 @@ import { auth, database } from "@/lib/firebase";
 import { getUsernameFromDB } from "@/lib/getUsername";
 import { ref, get } from "firebase/database";
 import { addMemberToParty } from "@/lib/addMemberToParty";
+import Nav from "@/Components/Nav";
 
 const JoinPartyPage = () => {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [partyId, setPartyId] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadUsername = async () => {
@@ -32,7 +34,13 @@ const JoinPartyPage = () => {
   }, []);
 
   const handleJoin = async () => {
-    if (!partyId.trim()) return;
+    if (!partyId.trim()) {
+      setError("❌ Please enter a party ID.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
 
     try {
       const partyRef = ref(database, `parties/${partyId}`);
@@ -58,31 +66,40 @@ const JoinPartyPage = () => {
     } catch (err) {
       console.error("Error joining party:", err);
       setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-32 p-6 border rounded shadow text-center space-y-6">
-      <h1 className="text-2xl font-semibold">Join a Party</h1>
-      <p className="text-gray-700">Welcome, {username}! Enter the party ID:</p>
+    <div className="flex flex-col items-center">
+      <Nav username={username} />
+      <div className="flex items-center justify-center h-screen w-screen">
+        <div className="flex flex-col items-center justify-center border-solid border-black border-[2px] rounded-4xl !px-[100px] !py-[50px]">
+          <h2 className="font-poppins font-bold text-4xl">Join a party</h2>
+          <p className="font-poppins opacity-[18%]">
+            Welcome, {username}! Enter the party ID:
+          </p>
+          <div className="!mt-[20px] flex gap-2 items-center">
+            <input
+              type="text"
+              placeholder="Enter the party id"
+              required
+              value={partyId} // ✅ bind state
+              onChange={(e) => setPartyId(e.target.value)} // ✅ update state
+              className="w-[400px] !px-3 h-[45px] rounded-[8px] font-poppins text-[rgba(0,0,0,0.5)] bg-[#d9d9d920]"
+            />
+            <div
+              className="w-[45px] h-[45px] bg-accent flex items-center justify-center text-[14px] font-poppins font-medium text-white rounded-[9px] cursor-pointer"
+              onClick={handleJoin} // ✅ call handler
+            >
+              {loading ? "..." : "Go!"} {/* ✅ loading indicator */}
+            </div>
+          </div>
 
-      <input
-        type="text"
-        placeholder="Enter party ID"
-        className="w-full px-4 py-2 border rounded"
-        value={partyId}
-        onChange={(e) => setPartyId(e.target.value)}
-      />
-
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
-      <button
-        onClick={handleJoin}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        disabled={!partyId.trim()}
-      >
-        Join Party
-      </button>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </div>
+      </div>
     </div>
   );
 };

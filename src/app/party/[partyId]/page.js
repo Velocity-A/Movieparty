@@ -190,63 +190,73 @@ const PartyPage = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-32 p-6 border rounded shadow text-center space-y-6">
-      <h1 className="text-2xl font-bold">🎉 Party Started!</h1>
-      <p>
-        <strong>Party ID:</strong> {party.partyId}
-      </p>
-      <p>
-        <strong>Host:</strong> {party.hostUsername}
-      </p>
+    <div className="h-screen w-screen bg-black text-white overflow-hidden relative">
+      {/* Top-left Party Info */}
+      <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-sm p-2 rounded shadow text-sm">
+        <p>
+          <span className="font-semibold">Party ID:</span> {party.partyId}
+        </p>
+        <p>
+          <span className="font-semibold">Host:</span> {party.hostUsername}
+        </p>
+      </div>
 
-      <div className="mt-6 text-left">
-        <h2 className="text-lg font-semibold mb-2">👥 Members:</h2>
+      {/* Sidebar Members */}
+      <div className="absolute top-0 right-0 h-full w-64 bg-black/80 backdrop-blur-lg p-4 transition-transform duration-500 ease-in-out z-10 hover:translate-x-0 translate-x-full md:translate-x-0">
+        <h2 className="text-xl font-bold mb-4 border-b pb-2">👥 Members</h2>
         {members.length > 0 ? (
-          <ul className="list-disc pl-5">
+          <ul className="space-y-2 text-sm">
             {members.map((name, index) => (
-              <li key={index}>{name}</li>
+              <li key={index} className="border-b border-gray-700 pb-1">
+                {name}
+              </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-500">No members yet</p>
+          <p className="text-gray-400 text-sm">No members yet</p>
         )}
       </div>
 
-      {isHost && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">🎬 Select Video</h2>
-          <input
-            type="text"
-            placeholder="Enter video URL"
-            className="w-full p-2 border rounded mb-2"
-            value={videoURL}
-            onChange={(e) => setVideoURL(e.target.value)}
-          />
-          <button
-            onClick={handleSetVideo}
-            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-          >
-            Set Video
-          </button>
-        </div>
-      )}
+      {/* Main Video Player Area */}
+      <div className="flex flex-col items-center justify-center h-full w-full px-4">
+        {isHost && (
+          <div className="absolute bottom-6 left-6 z-20 bg-black/70 p-4 rounded shadow w-[300px]">
+            <h2 className="text-lg font-semibold mb-2">🎬 Select Video</h2>
+            <input
+              type="text"
+              placeholder="Enter video URL"
+              className="w-full p-2 text-black rounded mb-2"
+              value={videoURL}
+              onChange={(e) => setVideoURL(e.target.value)}
+            />
+            <button
+              onClick={handleSetVideo}
+              className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded"
+            >
+              Set Video
+            </button>
+          </div>
+        )}
 
-      {video && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">🎥 Now Playing:</h2>
-          <p className="text-gray-700">{video.name}</p>
-          <video
-            ref={videoRef}
-            src={video.url}
-            controls
-            muted
-            className="w-full mt-2 rounded border"
-            onPlay={isHost ? handlePlay : undefined}
-            onPause={isHost ? handlePause : undefined}
-            onSeeked={isHost ? handleSeek : undefined}
-          />
-        </div>
-      )}
+        {video ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <video
+              ref={videoRef}
+              src={video.url}
+              controls
+              muted
+              className="w-full h-full object-contain bg-black"
+              onPlay={isHost ? handlePlay : undefined}
+              onPause={isHost ? handlePause : undefined}
+              onSeeked={isHost ? handleSeek : undefined}
+            />
+          </div>
+        ) : (
+          <div className="text-center text-gray-400">
+            <p className="text-lg">No video selected</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
